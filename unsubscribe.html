@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unsubscribe Form</title>
+</head>
+<body>
+    <h2>Unsubscribe from Our Mailing List</h2>
+    <form id="unsubscribeForm" onsubmit="return unsubscribe(event)">
+        <label for="email">Email:</label><br>
+        <input type="email" id="email" name="email" required><br><br>
+        <input type="submit" value="Unsubscribe">
+    </form>
+
+    <p id="responseMessage"></p>
+
+    <script>
+        function unsubscribe(event) {
+            event.preventDefault(); // Prevent form from submitting the traditional way
+
+            const email = document.getElementById('email').value;
+            const responseMessage = document.getElementById('responseMessage');
+            
+            if (!email) {
+                responseMessage.innerText = "Please enter a valid email address.";
+                return;
+            }
+
+            fetch("https://api.sparkpost.com/api/v1/suppression-list", {
+                method: "POST",
+                headers: {
+                    "Authorization": "0ce97795e25cbc1020aec2ef2021dfbf108959a9",  // Replace with your API key securely on server-side
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    recipients: [{ address: email }],
+                    description: "User requested to unsubscribe"
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.errors) {
+                    responseMessage.innerText = "Error: " + data.errors[0].message;
+                } else {
+                    responseMessage.innerText = "Successfully unsubscribed!";
+                }
+            })
+            .catch(error => {
+                responseMessage.innerText = "An error occurred: " + error.message;
+            });
+        }
+    </script>
+</body>
+</html>
